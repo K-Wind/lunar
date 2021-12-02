@@ -1,0 +1,42 @@
+version: "3"
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
+    # hostname: rabbit
+    network_mode: host
+
+  api:
+    build:
+      context: ./Api
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    # depends_on:
+    #   - "rabbitmq"
+    ports:
+      - 44319:80
+      - 44320:443
+    # hostname: lunar
+    network_mode: host
+
+  business:
+    build:
+      context: ./Business
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    network_mode: host
+    # depends_on:
+    #   - "rabbitmq"
+      
+# networks:
+#   host:
+#     driver: host

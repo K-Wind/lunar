@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Business": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "commandLineArgs": "-p 5672:5672"
+    }
+  }
+}
