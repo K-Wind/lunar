@@ -1,0 +1,10 @@
+## A Countable Service
+
+Written in C#, with RabbitMQ as communication between docker containers.
+
+In order to run both services and local RabbitMQ, from root of project:
+```sh
+docker-compose up 
+```
+
+API can be tested at http://localhost:8080 when containers are running.
