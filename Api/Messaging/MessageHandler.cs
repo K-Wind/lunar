@@ -2,28 +2,41 @@
 
 namespace Api
 {
-    public class MessageHandler
+    public class MessageHandler : IMessageHandler
     {
         private readonly IConnection connection;
         private readonly IModel channel;
-        private readonly string requestQueueName;
-        private readonly string replyQueueName;
         private readonly EventingBasicConsumer consumer;
-        private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> callbackMapper = new();
+        private readonly ConcurrentDictionary<string, TaskCompletionSource<string>> pendingMessages;
+
+        private const string requestQueueName = "request";
+        private const string replyQueueName = "reply";
 
         public MessageHandler()
         {
-            var factory = new ConnectionFactory() { HostName = "rabbitmq", UserName = "guest", Password = "guest" };
+            pendingMessages = new ConcurrentDictionary<string,TaskCompletionSource<string>>();
+
+            var factory = new ConnectionFactory() { HostName = "rabbitmq" };
 
             connection = factory.CreateConnection();
             channel = connection.CreateModel();
+
             // declare a server-named queue
-            requestQueueName = channel.QueueDeclare(queue: "request", true, false, true).QueueName;
-            replyQueueName = channel.QueueDeclare(queue: "reply", true, false, true).QueueName;
+            channel.QueueDeclare(queue: requestQueueName,
+                                    durable: false,
+                                    exclusive: false,
+                                    autoDelete: false,
+                                    arguments: null);
+            channel.QueueDeclare(queue: replyQueueName,
+                                    durable: false,
+                                    exclusive: false,
+                                    autoDelete: false,
+                                    arguments: null);
+
             consumer = new EventingBasicConsumer(channel);
             consumer.Received += (model, ea) =>
             {
-                if (!callbackMapper.TryRemove(ea.BasicProperties.CorrelationId, out TaskCompletionSource<string>? tcs))
+                if (!pendingMessages.TryRemove(ea.BasicProperties.CorrelationId, out TaskCompletionSource<string>? tcs))
                     return;
                 var body = ea.Body.ToArray();
                 var response = Encoding.UTF8.GetString(body);
@@ -36,15 +49,20 @@ namespace Api
               autoAck: true);
         }
 
-        public void Send(string message)
+        public void Send(string message, IBasicProperties? props = null)
         {
             var body = Encoding.UTF8.GetBytes(message);
 
-            channel.BasicPublish(exchange: "", routingKey: requestQueueName, basicProperties: null, body: body);
-            Console.WriteLine(" [x] Sent {0}", message);
+            channel.BasicPublish(
+                exchange: "", 
+                routingKey: requestQueueName, 
+                basicProperties: props, 
+                body: body);
+
+            Console.WriteLine("Message: \"" + message + "\" sent");
         }
 
-        public Task<string> SendAndReceive(string message, CancellationToken cancellationToken = default)
+        public Task<string> SendAndReceive(string message)
         {
             IBasicProperties props = channel.CreateBasicProperties();
             var correlationId = Guid.NewGuid().ToString();
@@ -53,16 +71,10 @@ namespace Api
 
             var body = Encoding.UTF8.GetBytes(message);
             var tcs = new TaskCompletionSource<string>();
-            callbackMapper.TryAdd(correlationId, tcs);
+            pendingMessages.TryAdd(correlationId, tcs);
 
-            channel.BasicPublish(
-                exchange: "",
-                routingKey: requestQueueName,
-                basicProperties: props,
-                body: body);
-            Console.WriteLine(" [x] Sent {0}", message);
+            Send(message, props);
 
-            cancellationToken.Register(() => callbackMapper.TryRemove(correlationId, out var tmp));
             return tcs.Task;
         }
     }

@@ -2,16 +2,10 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
-
-#EXPOSE 5672
-
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-ENV ASPNETCORE_URLS http://*:44319
 EXPOSE 80
 EXPOSE 443
 
-ENV ASPNETCORE_ENVIRONMENT=Development
-
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["Api.csproj", "Api/"]
 RUN dotnet restore "Api/Api.csproj"

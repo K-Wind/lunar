@@ -1,11 +1,14 @@
 {
   "profiles": {
     "Business": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
     },
     "Docker": {
-      "commandName": "Docker",
-      "commandLineArgs": "-p 5672:5672"
+      "commandName": "Docker"
     }
   }
 }

@@ -10,22 +10,18 @@ services:
       interval: 5s
       timeout: 15s
       retries: 1
-    # hostname: rabbit
-    network_mode: host
+    hostname: "rabbitmq"
 
   api:
     build:
       context: ./Api
+    ports:
+      - 8080:80
+      - 443:443
     restart: on-failure
     depends_on:
       - rabbitmq
-    # depends_on:
-    #   - "rabbitmq"
-    ports:
-      - 44319:80
-      - 44320:443
-    # hostname: lunar
-    network_mode: host
+    
 
   business:
     build:
@@ -33,9 +29,6 @@ services:
     restart: on-failure
     depends_on:
       - rabbitmq
-    network_mode: host
-    # depends_on:
-    #   - "rabbitmq"
       
 # networks:
 #   host:

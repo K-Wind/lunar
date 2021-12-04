@@ -6,30 +6,27 @@ namespace Api.Controllers
     [Route("/[controller]/[action]")]
     public class Controller : ControllerBase
     {
-        private readonly MessageHandler _messaging;
+        private readonly IMessageHandler _messaging;
 
-        public Controller(ILogger<Controller> logger)
+        public Controller(IMessageHandler messageHandler)
         {
-            _messaging = new MessageHandler();
+            _messaging = messageHandler;
         }
 
         [HttpGet(Name = "Get")]
-        //[Route("api/[controller]/[action]")]
-        public string Get()
+
+        public async Task<string> Get()
         {
-            return _messaging.SendAndReceive("get").Result;
+            return await _messaging.SendAndReceive("get");
         }
 
         [HttpPost(Name = "Increment")]
-        //[Route("api/[controller]/[action]")]
         public void Increment()
         {
             _messaging.Send("increment");
-            //get success?
         }
 
         [HttpPost(Name = "Decrement")]
-        //[Route("api/[controller]/[action]")]
         public void Decrement()
         {
             _messaging.Send("decrement");
