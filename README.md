@@ -2,7 +2,7 @@
 
 Written in C#, with RabbitMQ as communication between docker containers.
 
-In order to run both services and local RabbitMQ, from root of project:
+In order to run both services and a local RabbitMQ instance, from root of project do:
 ```sh
 docker-compose up 
 ```
