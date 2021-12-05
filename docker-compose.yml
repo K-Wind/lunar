@@ -29,7 +29,3 @@ services:
     restart: on-failure
     depends_on:
       - rabbitmq
-      
-# networks:
-#   host:
-#     driver: host

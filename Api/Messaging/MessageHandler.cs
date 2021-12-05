@@ -21,7 +21,6 @@ namespace Api
             connection = factory.CreateConnection();
             channel = connection.CreateModel();
 
-            // declare a server-named queue
             channel.QueueDeclare(queue: requestQueueName,
                                     durable: false,
                                     exclusive: false,
