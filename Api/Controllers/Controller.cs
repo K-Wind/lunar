@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers
 {
     [ApiController]
-    [Route("/[controller]/[action]")]
     public class Controller : ControllerBase
     {
         private readonly IMessageHandler _messaging;
@@ -13,20 +12,22 @@ namespace Api.Controllers
             _messaging = messageHandler;
         }
 
-        [HttpGet(Name = "Get")]
-
+        [HttpGet]
+        [Route("count")]
         public async Task<string> Get()
         {
             return await _messaging.SendAndReceive("get");
         }
 
-        [HttpPost(Name = "Increment")]
+        [HttpPost]
+        [Route("count/increment")]
         public void Increment()
         {
             _messaging.Send("increment");
         }
 
-        [HttpPost(Name = "Decrement")]
+        [HttpPost]
+        [Route("count/decrement")]
         public void Decrement()
         {
             _messaging.Send("decrement");
